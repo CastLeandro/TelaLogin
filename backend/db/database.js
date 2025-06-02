@@ -1,10 +1,9 @@
-require('dotenv').config();
 const { Sequelize} = require('sequelize');
+require('dotenv').config();
 
 const cursor = new Sequelize(process.env.BANCO_URL,{
     logging: console.log,
 })
-
 
 async function testarConexao() {
     try {
@@ -13,7 +12,6 @@ async function testarConexao() {
     }catch(error){
         console.error('Não foi possível conectar ao banco:', error);
     }
-    
 }
 
 testarConexao();
