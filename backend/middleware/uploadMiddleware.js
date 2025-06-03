@@ -36,10 +36,11 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 5 * 1024 * 1024
+        fileSize: 5 * 1024 * 1024 // Limite de 5MB
     }
 });
 
+// Middleware para verificar se a foto foi enviada
 const verificarFotoObrigatoria = (req, res, next) => {
     if (!req.file) {
         return res.status(400).json({ 
@@ -50,6 +51,7 @@ const verificarFotoObrigatoria = (req, res, next) => {
     next();
 };
 
+// Middleware de tratamento de erros do multer
 const handleUploadError = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {

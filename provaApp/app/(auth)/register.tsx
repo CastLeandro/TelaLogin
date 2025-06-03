@@ -1,34 +1,35 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { login } from '../utils/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { register } from '../../utils/api';
 
-export default function Login() {
+export default function Register() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleLogin = async () => {
-    if (!username || !password) {
+  const handleRegister = async () => {
+    if (!username || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    const result = await login({ username, senha: password });
+    const result = await register({ username, email, senha: password });
     
     if (result.error) {
       Alert.alert('Error', result.error);
     } else {
-      await AsyncStorage.setItem('userToken', result.data?.token || '');
-      router.replace('/(app)/home');
+      Alert.alert('Success', 'Registration successful! Please login.', [
+        { text: 'OK', onPress: () => router.replace('/') }
+      ]);
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.title}>Create Account</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -36,6 +37,15 @@ export default function Login() {
             placeholderTextColor="#9f9f9f"
             value={username}
             onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#9f9f9f"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
           />
           <TextInput
@@ -49,19 +59,19 @@ export default function Login() {
         </View>
 
         <TouchableOpacity 
-          style={styles.loginButton}
-          onPress={handleLogin}
+          style={styles.registerButton}
+          onPress={handleRegister}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Create Account</Text>
         </TouchableOpacity>
 
-        <Link href="/(auth)/register" asChild>
+        <Link href="/" asChild>
           <TouchableOpacity 
-            style={styles.registerButton}
+            style={styles.loginButton}
             activeOpacity={0.6}
           >
-            <Text style={styles.registerText}>Don't have an account? Register</Text>
+            <Text style={styles.loginText}>Already have an account? Login</Text>
           </TouchableOpacity>
         </Link>
       </View>
@@ -72,7 +82,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1026', // Deep space blue
+    backgroundColor: '#0B1026',
   },
   formContainer: {
     flex: 1,
@@ -107,7 +117,7 @@ const styles = StyleSheet.create({
     borderColor: '#2E3A59',
     width: '100%',
   },
-  loginButton: {
+  registerButton: {
     backgroundColor: '#6C63FF',
     padding: 15,
     borderRadius: 12,
@@ -127,14 +137,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
-  registerButton: {
+  loginButton: {
     padding: 15,
     alignItems: 'center',
     marginTop: 10,
   },
-  registerText: {
+  loginText: {
     color: '#6C63FF',
     fontSize: 14,
     textDecorationLine: 'underline',
   },
-});
+}); 
