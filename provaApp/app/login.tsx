@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { login } from '../utils/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'http://localhost:3000';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -10,18 +11,28 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+    try {
+      const response = await fetch(`${API_URL}/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          senha: password,
+        }),
+      });
 
-    const result = await login({ username, senha: password });
-    
-    if (result.error) {
-      Alert.alert('Error', result.error);
-    } else {
-      await AsyncStorage.setItem('userToken', result.data?.token || '');
-      router.replace('/(app)/home');
+      const data = await response.json();
+
+      if (response.ok) {
+        await AsyncStorage.setItem('userToken', data.token);
+        router.replace('/(app)/home');
+      } else {
+        Alert.alert('Error', data.error || 'Login failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error. Please try again.');
     }
   };
 
@@ -36,7 +47,6 @@ export default function Login() {
             placeholderTextColor="#9f9f9f"
             value={username}
             onChangeText={setUsername}
-            autoCapitalize="none"
           />
           <TextInput
             style={styles.input}
@@ -48,19 +58,12 @@ export default function Login() {
           />
         </View>
 
-        <TouchableOpacity 
-          style={styles.loginButton}
-          onPress={handleLogin}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
 
         <Link href="/(auth)/register" asChild>
-          <TouchableOpacity 
-            style={styles.registerButton}
-            activeOpacity={0.6}
-          >
+          <TouchableOpacity style={styles.registerButton}>
             <Text style={styles.registerText}>Don't have an account? Register</Text>
           </TouchableOpacity>
         </Link>
@@ -78,7 +81,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'transparent',
   },
   title: {
@@ -93,48 +95,43 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '100%',
-    maxWidth: 320,
     marginBottom: 20,
   },
   input: {
     backgroundColor: 'rgba(108, 99, 255, 0.1)',
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 10,
     color: '#ffffff',
     fontSize: 16,
     marginBottom: 15,
     borderWidth: 1,
     borderColor: '#2E3A59',
-    width: '100%',
   },
   loginButton: {
     backgroundColor: '#6C63FF',
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 10,
     width: '100%',
-    maxWidth: 320,
     alignItems: 'center',
     marginBottom: 15,
     shadowColor: '#6C63FF',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 5,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    letterSpacing: 1,
   },
   registerButton: {
     padding: 15,
     alignItems: 'center',
-    marginTop: 10,
   },
   registerText: {
-    color: '#6C63FF',
-    fontSize: 14,
+    color: '#9f9f9f',
+    fontSize: 16,
     textDecorationLine: 'underline',
   },
-});
+}); 
